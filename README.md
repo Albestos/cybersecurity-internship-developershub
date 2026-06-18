@@ -32,8 +32,6 @@ Node.js/Express e-commerce application, for implementation and testing.
 
 │   └── Week1_Security_Report_Ayesha.pdf
 
-│
-
 ├── Week2-Security-Implementation/
 
 │   ├── Week2_Security_Report_Ayesha.pdf
@@ -51,8 +49,6 @@ Node.js/Express e-commerce application, for implementation and testing.
 │       ├── bin/www
 
 │       └── hashpasswords.js
-
-│
 
 └── Week3-PenTesting-Logging-HTTPS/
 
@@ -97,6 +93,7 @@ Node.js/Express e-commerce application, for implementation and testing.
 ### Security Fixes Implemented
 
 | Fix | Vulnerability Addressed | Library Used | Status |
+|---|---|---|---|
 | Secure HTTP Headers | Missing CSP, X-Frame-Options, XSS headers | helmet@4 | ✅ Done |
 | Input Validation | XSS, empty input attacks | validator | ✅ Done |
 | Password Hashing | Plaintext password storage | bcrypt | ✅ Done |
