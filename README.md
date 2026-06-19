@@ -32,11 +32,7 @@ Node.js/Express e-commerce application, for implementation and testing.
 
 ├── Week1-DVWA-Assessment/
 
-│   └── Week1_Security_Report_Ayesha.pdf
-
 ├── Week2-Security-Implementation/
-
-│   ├── Week2_Security_Report_Ayesha.pdf
 
 │   └── vulnerable-node/
 
@@ -62,12 +58,25 @@ Node.js/Express e-commerce application, for implementation and testing.
 
 └── Week3-PenTesting-Logging-HTTPS/
 
-└── Week3_Security_Report_Ayesha.pdf
 
 
 > **Note:** The code inside `Week2-Security-Implementation/vulnerable-node/` 
 > is the final version of the project and contains all security changes 
 > from both Week 2 and Week 3.
+
+
+
+---
+
+
+## 📄 Full Internship Report
+
+A combined PDF report covering all 3 weeks — including vulnerability findings, 
+code fixes, penetration testing results, and the final security checklist — 
+is available here:
+
+[View Complete Report (PDF)](Cybersecurity_Internship_Report_Ayesha_Sarwar_Khan.pdf)
+
 
 ---
 
@@ -220,14 +229,7 @@ npm start
 
 ---
 
-## 📄 Reports
 
-All weekly assessment reports are included in their respective folders:
-- [Week 1 Report](Week1-DVWA-Assessment/Week1_Security_Report_Ayesha.pdf)
-- [Week 2 Report](Week2-Security-Implementation/Week2_Security_Report_Ayesha.pdf)
-- [Week 3 Report](Week3-PenTesting-Logging-HTTPS/Week3_Security_Report_Ayesha.pdf)
-
----
 
 *Prepared by Ayesha Sarwar Khan | Developers Hub Corporation | June 2026*
 
