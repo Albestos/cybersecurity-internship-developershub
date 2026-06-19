@@ -27,32 +27,21 @@ Node.js/Express e-commerce application, for implementation and testing.
 ## 📁 Repository Structure
 
 ├── README.md
-
 ├── Week1-DVWA-Assessment/
-
 │   └── Week1_Security_Report_Ayesha.pdf
-
+│
 ├── Week2-Security-Implementation/
-
 │   ├── Week2_Security_Report_Ayesha.pdf
-
-│   └── vulnerable-node/
-
-│       ├── app.js
-
+│   └── vulnerable-node/        ← contains final updated code
+│       ├── app.js              (includes Week 3 Winston + HTTPS changes)
+│       ├── bin/www             (includes Week 3 HTTPS server config)
 │       ├── routes/login.js
-
 │       ├── model/auth.js
-
 │       ├── model/products.js
-
-│       ├── bin/www
-
 │       └── hashpasswords.js
-
+│
 └── Week3-PenTesting-Logging-HTTPS/
-
-└── Week3_Security_Report_Ayesha.pdf
+    └── Week3_Security_Report_Ayesha.pdf
 ---
 
 ## 📅 Week 1 — Security Assessment & Vulnerability Analysis
