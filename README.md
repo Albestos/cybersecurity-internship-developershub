@@ -232,9 +232,6 @@ npm start
 
 # Week 4 — Advanced Threat Detection & Web Security Enhancements
 
-**Project:** vulnerable-node
-**Deadline:** July 21, 2026
-
 This week focused on three areas: intrusion detection, API security hardening, and security headers/CSP. All tasks were implemented and verified with functional tests (not just configuration — actual attack simulations were run against each control).
 
 ---
@@ -330,7 +327,7 @@ The product search endpoint (`routes/products.js`) reflects user input into the 
 
 ---
 
-## Files Changed This Week
+## Files Changed in Week 4
 - `app.js` — rate limiter, CORS, explicit Helmet/CSP/HSTS config
 - `routes/login.js` — login rate limiter, added `.catch()` bug fix
 - `routes/products.js` — API key middleware on `/products/buy`
@@ -339,6 +336,54 @@ The product search endpoint (`routes/products.js`) reflects user input into the 
 - `views/layout.ejs` — removed inline script (moved to external file), removed external image
 - `public/js/app-custom.js` — new file (externalized JS)
 
+---
+
+# Week 5 — Ethical Hacking & Exploiting Vulnerabilities
+
+## Environment Setup
+Kali Linux (VirtualBox) was switched from NAT to a **Bridged Adapter** to reach the Windows host directly over the local network (both ended up on the `192.168.100.x` subnet). This was required for all scanning/testing tools below to reach the running app.
+
+## 5.1 Reconnaissance
+Ran `nmap` (port/service scan) and `nikto` (web server scan) against the running app from Kali.
+
+- Confirmed Week 4's security headers, CORS policy, and rate limiting are all active and visible externally.
+- Nikto flagged the session cookie (`connect.sid`) as missing the `Secure` flag — should be `true` since the app is HTTPS-only. **(open item, see below)**
+- Nikto flagged a missing `Permissions-Policy` header and a deprecated `Expect-CT` header — minor, low-priority additions.
+- Nikto's ~8,000 requests triggered the app's own rate limiter mid-scan — a good sign the Week 4 rate limiting is working, though it did cause a few checks to report false "missing header" results under throttled responses.
+
+## 5.2 SQL Injection Testing
+- Reviewed every query in `model/auth.js`, `model/products.js`, and `model/init_db.js` — all use parameterized queries (`$1`, `$2` placeholders via `pg`/`pg-promise`). No string-concatenated SQL anywhere in the codebase.
+- Ran SQLMap against `/products/search` (`--level=3 --risk=2 --dbms=postgresql`). First run was contaminated by the rate limiter (1,111× `429` responses); rate limit was temporarily raised, a clean re-run completed all test techniques with no injectable parameters found, then the rate limit was reverted.
+- **Conclusion:** the application is not vulnerable to SQL injection at the tested endpoint, backed by both code review and a clean tool-based scan.
+
+## 5.3 CSRF Protection
+Implemented `csurf` middleware, applied to the two state-changing form flows:
+- **Login** (`routes/login.js`, `views/login.ejs`) — token rendered into a hidden `_csrf` field, validated on `POST /login/auth`.
+- **Purchase** (`routes/products.js`, `views/product_detail.ejs`) — token rendered into the buy modal's hidden `_csrf` field, validated on `POST /products/buy`, picked up automatically by the existing jQuery `.serialize()` AJAX call.
+
+Verified via a full, real end-to-end purchase through the browser UI, which also surfaced three additional pre-existing bugs (see below).
+
+## 5.4 Bugs Found and Fixed During Week 5 Testing
+Attempting a genuine end-to-end purchase (necessary to validate CSRF properly) surfaced three defects that no prior testing (Weeks 1–4) had exercised:
+
+1. **API key vs. session conflict** — Week 4's `apiKeyAuth` middleware blocked the browser's own logged-in purchase requests with `401`, since the AJAX call never sends an `x-api-key` header. Fixed by allowing authenticated sessions to bypass the API key check, while still requiring a key for external/unauthenticated API access.
+2. **Dangling purchase promise** — `routes/products.js`'s buy handler had no `.then()` on the purchase call; successful purchases hung forever with no response, while failed purchases incorrectly reported success. Fixed by adding proper `.then()`/`.catch()` handling.
+3. **`check_logged()` not halting execution** — the auth-check helper issued a redirect but didn't stop the calling route, causing every protected route to also try rendering a second response on unauthenticated access, producing `ERR_HTTP_HEADERS_SENT` errors. Fixed by returning `true`/`false` from `check_logged()` and updating all five call sites in `routes/products.js` to respect it.
+
+Full write-up: `Week5_Ethical_Hacking_Documentation.docx`
+
+## Open Items Carried Forward to Week 6
+- Reflected XSS in the product search handler (`routes/products.js`) — currently mitigated in-browser by CSP, but should be fixed with proper output encoding.
+- Session cookie missing the `Secure` flag (`app.js`) — should be set to `true`.
+
+## Files Changed in Week 5
+- `app.js` — csurf middleware setup
+- `routes/login.js` — CSRF protection on `/login` and `/login/auth`
+- `routes/products.js` — CSRF protection on `/products/detail` and `/products/buy`; fixed dangling purchase promise; fixed all `check_logged()` call sites
+- `routes/login_check.js` — `check_logged()` now returns a boolean and actually halts route execution
+- `middleware/apiKeyAuth.js` — session-aware bypass so logged-in browser users aren't blocked
+- `views/login.ejs` — hidden `_csrf` field
+- `views/product_detail.ejs` — hidden `_csrf` field in the buy form
 
 *Prepared by Ayesha Sarwar Khan | Developers Hub Corporation | June 2026*
 
