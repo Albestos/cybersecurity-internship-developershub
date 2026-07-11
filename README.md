@@ -230,6 +230,114 @@ npm start
 [Click here to watch the video] https://drive.google.com/file/d/1b5esp1ptZhv7W4pF7lMzY_APQiEJV5z6/view?usp=sharing
 ---
 
+# Week 4 — Advanced Threat Detection & Web Security Enhancements
+
+**Project:** vulnerable-node
+**Deadline:** July 21, 2026
+
+This week focused on three areas: intrusion detection, API security hardening, and security headers/CSP. All tasks were implemented and verified with functional tests (not just configuration — actual attack simulations were run against each control).
+
+---
+
+## Task 1 — Intrusion Detection & Monitoring (Fail2Ban)
+
+Configured Fail2Ban on the Kali Linux host to monitor SSH and automatically ban IPs after repeated failed login attempts.
+
+**Configuration (`/etc/fail2ban/jail.local`):**
+```ini
+[DEFAULT]
+ignoreself = true      # reverted to true after testing (was temporarily false for local test validation)
+maxretry = 3
+
+[sshd]
+enabled  = true
+port     = ssh
+logpath  = %(sshd_log)s
+backend  = %(sshd_backend)s
+maxretry = 3
+findtime = 10m
+bantime  = 30m
+```
+
+**Verification:** Simulated brute-force login attempts against SSH. Fail2Ban correctly detected repeated failures and banned the offending IP (`127.0.0.1`) after the threshold was reached — confirmed via `fail2ban-client status sshd` showing `Total banned: 2`, `Currently banned: 1`.
+
+Full write-up: `Task1_SSH_Fail2Ban_Documentation.docx`
+
+---
+
+## Task 2 — API Security Hardening
+
+### 2.1 Rate Limiting (`express-rate-limit`)
+- Global limiter: 100 requests / 15 min per IP (`app.js`)
+- Strict login limiter: 5 attempts / 10 min per IP (`routes/login.js`), specifically targeting the brute-force-prone `/login/auth` endpoint
+
+### 2.2 CORS
+- Restricted to the application's own origin (`https://localhost:3443`) instead of being unset/open
+- Credentials (session cookies) only accepted from the allowed origin
+
+### 2.3 API Key Authentication
+- New middleware (`middleware/apiKeyAuth.js`) protecting `/products/buy` — a sensitive transaction endpoint (order/payment data)
+- Requests without a valid `x-api-key` header receive `401 Unauthorized`
+
+### Bug fix (discovered during testing)
+`routes/login.js` had no `.catch()` on the `auth()` promise, so any failed login crashed the entire server (unhandled promise rejection) — effectively a self-inflicted DoS. Fixed by adding proper error handling and redirecting to the login page with an error message instead.
+
+**Verification:** All three controls tested via curl and live login attempts — rate limiter correctly blocks the 6th login attempt, CORS correctly refuses to reflect disallowed origins, API key middleware correctly returns 401 without a valid key.
+
+Full write-up: `Task2_API_Security_Hardening_Documentation.docx`
+
+---
+
+## Task 3 — Security Headers & CSP Implementation
+
+Replaced the app's implicit `helmet()` defaults with an explicit, documented Content Security Policy and HSTS configuration in `app.js`:
+
+```js
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'self'"],
+      upgradeInsecureRequests: []
+    }
+  },
+  hsts: {
+    maxAge: 15552000,
+    includeSubDomains: true,
+    preload: false
+  }
+}));
+```
+
+### Fixes required to stay CSP-compliant
+- Moved an inline `<script>` block (buy-form AJAX handler, purchase modal, grid layout init) from `views/layout.ejs` into a new external file `public/js/app-custom.js`, since the previous default CSP was already silently blocking it (`script-src 'self'` disallows inline scripts).
+- Removed an external "fork me on GitHub" badge image that was being blocked by `img-src`, rather than widening the policy for a cosmetic element.
+
+**Verification:**
+- Headers confirmed via `curl -I` showing the explicit CSP and HSTS values.
+- Live test: submitted a reflected XSS payload (`<script>alert('XSS')</script>`) through the product search field. The app reflects the input unescaped (a genuine XSS bug, flagged for Week 5 remediation), but the browser blocked the script from executing, confirming CSP is providing real defense-in-depth protection.
+
+Full write-up: `Task3_Security_Headers_CSP_Documentation.docx`
+
+---
+
+## Known Issue Carried Forward to Week 5
+The product search endpoint (`routes/products.js`) reflects user input into the page without output encoding, resulting in a reflected XSS vulnerability. It is currently mitigated in-browser by the CSP policy from Task 3, but the underlying code should be fixed with proper output encoding/escaping as part of Week 5's injection remediation work.
+
+---
+
+## Files Changed This Week
+- `app.js` — rate limiter, CORS, explicit Helmet/CSP/HSTS config
+- `routes/login.js` — login rate limiter, added `.catch()` bug fix
+- `routes/products.js` — API key middleware on `/products/buy`
+- `middleware/apiKeyAuth.js` — new file
+- `config.js` — added `apiKey` config value
+- `views/layout.ejs` — removed inline script (moved to external file), removed external image
+- `public/js/app-custom.js` — new file (externalized JS)
 
 
 *Prepared by Ayesha Sarwar Khan | Developers Hub Corporation | June 2026*
