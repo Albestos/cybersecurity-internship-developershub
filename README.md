@@ -58,6 +58,23 @@ Node.js/Express e-commerce application, for implementation and testing.
 
 └── Week3-PenTesting-Logging-HTTPS/
 
+Week4-Threat-Detection-API-Security/
+  ├── app.js
+  ├── routes/login.js
+  ├── routes/products.js
+  ├── middleware/apiKeyAuth.js
+  └── config.js
+
+Week5-Ethical-Hacking/
+  ├── routes/login_check.js
+  ├── middleware/apiKeyAuth.js
+  └── views/product_detail.ejs
+
+Week6-Security-Audits-Deployment/
+  ├── views/search.ejs
+  ├── Dockerfile
+  ├── docker-compose.yml
+  └── .dockerignore
 
 
 > **Note:** The code inside `Week2-Security-Implementation/vulnerable-node/` 
@@ -75,8 +92,8 @@ A combined PDF report covering all 3 weeks — including vulnerability findings,
 code fixes, penetration testing results, and the final security checklist — 
 is available here:
 
-[View Complete Report (PDF)](Cybersecurity_Internship_Report_Ayesha_Sarwar_Khan.pdf)
-
+[View Complete Report (PDF)](Cybersecurity_Internship_Report_Ayesha_Sarwar_Khan.pdf) for week 1-3
+[View Complete Report (PDF)]
 
 ---
 
