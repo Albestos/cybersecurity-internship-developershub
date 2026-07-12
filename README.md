@@ -93,7 +93,6 @@ code fixes, penetration testing results, and the final security checklist —
 is available here:
 
 [View Complete Report (PDF)](Cybersecurity_Internship_Report_Ayesha_Sarwar_Khan.pdf) for week 1-3
-[View Complete Report (PDF)]
 
 ---
 
