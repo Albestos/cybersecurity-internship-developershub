@@ -230,6 +230,10 @@ npm start
 [Click here to watch the video] https://drive.google.com/file/d/1b5esp1ptZhv7W4pF7lMzY_APQiEJV5z6/view?usp=sharing
 ---
 
+
+# Weeks 4–6 — Cybersecurity Internship Progress
+
+
 # Week 4 — Advanced Threat Detection & Web Security Enhancements
 
 This week focused on three areas: intrusion detection, API security hardening, and security headers/CSP. All tasks were implemented and verified with functional tests (not just configuration — actual attack simulations were run against each control).
@@ -372,10 +376,6 @@ Attempting a genuine end-to-end purchase (necessary to validate CSRF properly) s
 
 Full write-up: `Week5_Ethical_Hacking_Documentation.docx`
 
-## Open Items Carried Forward to Week 6
-- Reflected XSS in the product search handler (`routes/products.js`) — currently mitigated in-browser by CSP, but should be fixed with proper output encoding.
-- Session cookie missing the `Secure` flag (`app.js`) — should be set to `true`.
-
 ## Files Changed in Week 5
 - `app.js` — csurf middleware setup
 - `routes/login.js` — CSRF protection on `/login` and `/login/auth`
@@ -385,5 +385,45 @@ Full write-up: `Week5_Ethical_Hacking_Documentation.docx`
 - `views/login.ejs` — hidden `_csrf` field
 - `views/product_detail.ejs` — hidden `_csrf` field in the buy form
 
-*Prepared by Ayesha Sarwar Khan | Developers Hub Corporation | June 2026*
+---
 
+# Week 6 — Advanced Security Audits & Final Deployment Security (PARTIAL)
+
+**Status: Task 1 complete. Task 2 partially complete. Task 3 not started.**
+
+## 6.1 Task 1 — Security Audits & Compliance ✅ COMPLETE
+
+**Closed the two items carried over from Week 5:**
+- Reflected XSS in product search — fixed at the source in `views/search.ejs` by switching `<%- in_query %>` (unescaped) to `<%= in_query %>` (auto-escaping).
+- Session cookie missing `Secure` flag — `app.js` session config updated to `secure: true, httpOnly: true`, with `maxAge` reduced from ~3,170 years to 1 hour.
+
+**OWASP ZAP audit** (before → after fixes): Medium 4→2, Low 4→3, High 0→0.
+- Fixed: removed unused IE8 shim scripts, added `formAction: ["'self'"]` to CSP, upgraded Bootstrap 3.3.6→3.4.1, fixed a duplicate `csurf` instance bug (routes had bypassed the intended cookie security flags — consolidated into `middleware/csrf.js`).
+- Accepted risk (documented): CSP `style-src unsafe-inline` (needed for one inline `<style>` block), Bootstrap CVE-2025-1647 (full v4/v5 migration out of scope).
+
+**Lynis system audit** (Kali host): hardening index 62→65. Installed/enabled `ufw` (firewall), `rkhunter` (malware scanner, clean scan), `auditd` (with active watch rules on `/etc/passwd` and `sshd_config`), and explicitly set `PermitRootLogin no` in SSH config.
+
+## 6.2 Task 2 — Secure Deployment Practices ⚠️ PARTIALLY COMPLETE
+
+**Completed:**
+- **Critical fix:** discovered the app was running a plaintext HTTP server (port 3000) in parallel with HTTPS this entire time, undermining prior TLS work. Removed entirely — `bin/www` now only serves HTTPS.
+- Hardened `Dockerfile`: added `.dockerignore`, non-root `appuser` via `USER`, removed unused `netcat`, corrected `EXPOSE`/port to match the real HTTPS port (3443).
+- Hardened `docker-compose.yml`: Postgres port no longer exposed to the host, DB password moved to a Docker secret file instead of plaintext.
+- Image builds successfully with the hardened config.
+
+
+
+## Files Changed in Week 6 (so far)
+- `views/search.ejs` — XSS fix (auto-escaping output tag)
+- `app.js` — secure cookie flags, CSP `formAction`, consolidated csurf import
+- `routes/login.js`, `routes/products.js` — now import shared `middleware/csrf.js` instead of local instances
+- `middleware/csrf.js` — new file, shared CSRF instance with proper cookie flags
+- `views/layout.ejs` — removed legacy IE8 shim scripts
+- `public/css/bootstrap.min.css`, `public/js/bootstrap.min.js` — upgraded 3.3.6→3.4.1
+- `bin/www` — removed plaintext HTTP server, HTTPS-only now
+- `Dockerfile`, `docker-compose.yml`, `.dockerignore` — hardened (see above)
+- `package.json` — added `overrides` for `pg` (fix attempted, unconfirmed)
+
+
+  
+*Prepared by Ayesha Sarwar Khan | Developers Hub Corporation | June 2026*
