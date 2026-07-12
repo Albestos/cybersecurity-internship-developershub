@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+*.log
+access.log
+app-custom.log
+security.log
+server.key
+server.cert
+.env
+README.md
+LICENSE
+attacks
+scanner
